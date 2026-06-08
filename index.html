@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KZN Hidden Gems — Discover KwaZulu-Natal's Best Outdoor Destinations</title>
+  <meta name="description" content="Discover safe, verified outdoor destinations in Durban and KwaZulu-Natal. Real-time safety alerts, parking scores, trail guides, and community reviews." />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- App Styles -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/photos.css" />
+
+  <style>
+    @keyframes slideIn {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===================== NAV ===================== -->
+<nav class="nav">
+  <a href="#" class="nav-brand" onclick="showPage('home');return false">
+    <div class="logo-icon">🌿</div>
+    <div>
+      <span class="brand-name">KZN Hidden Gems</span>
+      <span class="brand-sub">Durban & KwaZulu-Natal</span>
+    </div>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#" data-page="home" class="active">Home</a></li>
+    <li><a href="#" data-page="explorer">Map Explorer</a></li>
+    <li><a href="#" data-page="about">About</a></li>
+    <li><a href="#" data-page="admin" id="nav-admin-link" onclick="openAdminPanel();return false" style="color:rgba(255,255,255,0.55);font-size:0.8rem">⚙️ Admin</a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <button class="btn btn-outline" onclick="openReportModal('')">⚠️ Report Alert</button>
+    <button class="btn btn-primary" onclick="showPage('explorer');initMap();renderExplorerSidebar(KZN_DATA.locations);renderMapMarkers(KZN_DATA.locations)">🗺️ Explore Map</button>
+  </div>
+</nav>
+
+<!-- ===================== ACTIVE ALERTS BANNER ===================== -->
+<div class="alert-banner">
+  <span>🚨</span>
+  <strong>Active Alerts:</strong>&nbsp;
+  Water pollution warning at Paradise Valley · Flash flood risk at Krantzkloof lower gorge · Always check conditions before visiting
+  <span style="margin-left:auto;font-weight:600;cursor:pointer;text-decoration:underline" onclick="showPage('explorer');initMap();applyFilter('alerts');renderExplorerSidebar(KZN_DATA.locations.filter(l=>l.activeAlerts>0));renderMapMarkers(KZN_DATA.locations.filter(l=>l.activeAlerts>0))">
+    View all alerts →
+  </span>
+</div>
+
+<!-- ===================== MAP EXPLORER (FIXED OVERLAY) ===================== -->
+<div id="explorer">
+  <div class="explorer-map">
+    <div id="map"></div>
+  </div>
+  <div class="explorer-sidebar">
+    <div class="explorer-sidebar-header">
+      <h3>🗺️ KZN Outdoor Destinations</h3>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input type="text" id="sidebar-search" placeholder="Search locations…" style="flex:1;padding:7px 11px;border:1.5px solid #d4e6d8;border-radius:8px;font-size:0.85rem;outline:none" oninput="filterSidebar(this.value)" />
+      </div>
+      <div style="font-size:0.75rem;color:#7a8f7e">
+        🟢 High DI · 🟡 Medium DI · 🔴 Low DI / Alert
+      </div>
+    </div>
+
+    <!-- Filter chips -->
+    <div class="filters">
+      <button class="filter-chip active" data-filter="all" onclick="applyFilter('all')">All</button>
+      <button class="filter-chip" data-filter="free" onclick="applyFilter('free')">🆓 Free</button>
+      <button class="filter-chip" data-filter="safe" onclick="applyFilter('safe')">🛡 High Safety</button>
+      <button class="filter-chip" data-filter="family" onclick="applyFilter('family')">👨‍👩‍👧 Family</button>
+      <button class="filter-chip" data-filter="hiking" onclick="applyFilter('hiking')">🥾 Hiking</button>
+      <button class="filter-chip" data-filter="wildlife" onclick="applyFilter('wildlife')">🦓 Wildlife</button>
+      <button class="filter-chip alert-chip" data-filter="alerts" onclick="applyFilter('alerts')">⚠️ Has Alerts</button>
+    </div>
+
+    <!-- Sidebar List -->
+    <div id="explorer-list" style="padding:8px;flex:1"></div>
+  </div>
+</div>
+
+<!-- ===================== DETAIL VIEW ===================== -->
+<div id="detail-view"></div>
+
+<!-- ===================== HOME PAGE ===================== -->
+<div id="home-page" style="display:block">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span>🌿</span>
+        <span>KwaZulu-Natal's #1 Outdoor Discovery Platform</span>
+      </div>
+      <h1>Find Your <span>Next Adventure</span><br/>in KZN</h1>
+      <p>
+        Discover Durban's hidden outdoor gems — from gorge reserves to coastal forests.
+        Real-time safety alerts, parking security scores, and community-verified reviews.
+        Built for South Africans who love nature and value their safety.
+      </p>
+      <div class="hero-search">
+        <input type="text" id="hero-search-input" placeholder="Search parks, trails, waterfalls, wildlife…" autocomplete="off" oninput="handleSearchInput(this.value)" onkeydown="if(event.key==='Enter')handleSearch(this.value);if(event.key==='Escape')closeSuggestions()" />
+        <button id="hero-search-btn">Search</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="stat-num">7+</div>
+          <div class="stat-label">Verified Locations</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-num">21</div>
+          <div class="stat-label">Community Reviews</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-num">400ha+</div>
+          <div class="stat-label">Mapped Terrain</div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-num">Real-Time</div>
+          <div class="stat-label">Safety Alerts</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search dropdown — outside hero so overflow:hidden doesn't clip it -->
+  <div id="hero-search-dropdown" style="display:none;position:fixed;z-index:2000;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.22);max-height:380px;overflow-y:auto;border:1px solid #d4e6d8"></div>
+
+  <!-- Partners -->
+  <div class="partners-bar">
+    <p>Community Partners & Accreditation</p>
+    <div class="partners-list">
+      <span class="partner-chip">🏃 Durban Ramblers Hiking Club (Est. 1932)</span>
+      <span class="partner-chip">🧭 Durban Hiking & Adventures</span>
+      <span class="partner-chip">🦅 Ezemvelo KZN Wildlife</span>
+      <span class="partner-chip">🌳 eThekwini Municipality Parks</span>
+      <span class="partner-chip">🏳️ Green Flag Trails – HOSA</span>
+      <span class="partner-chip">🔒 Winston Park Guardians</span>
+    </div>
+  </div>
+
+  <!-- Featured Locations -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <h2>⭐ Featured Destinations</h2>
+          <p>Our top-rated, safety-verified outdoor gems near Durban</p>
+        </div>
+        <button class="btn btn-primary" id="open-explorer-btn">View All on Map →</button>
+      </div>
+      <div class="featured-grid" id="featured-cards">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Safety Section -->
+  <section class="safety-section">
+    <div class="container">
+      <div style="text-align:center;max-width:600px;margin:0 auto 0 auto">
+        <h2 style="font-size:2rem;font-weight:800;color:white;margin-bottom:12px">Safety is our Priority</h2>
+        <p style="color:rgba(255,255,255,0.75);font-size:1rem;line-height:1.7">
+          In KwaZulu-Natal, personal security is the ultimate gatekeeper for outdoor recreation.
+          Our weighted Desirability Index gives 60% combined weight to personal safety and parking security —
+          because your safety comes first, always.
+        </p>
+      </div>
+      <div class="safety-grid">
+        <div class="safety-card">
+          <div class="icon">🛡️</div>
+          <h4>Real-Time Safety Alerts</h4>
+          <p>Community-reported security incidents, crime warnings, and hazard notices updated in real time. Know before you go.</p>
+        </div>
+        <div class="safety-card">
+          <div class="icon">🔒</div>
+          <h4>Parking Security Ratings</h4>
+          <p>We differentiate between fenced gated facilities, guarded public lots, and unsecured roadside trailheads — so your car stays safe.</p>
+        </div>
+        <div class="safety-card">
+          <div class="icon">📊</div>
+          <h4>Weighted Desirability Index</h4>
+          <p>Our D_i formula weights safety (35%) and parking (25%) most heavily. A beautiful waterfall with poor security scores lower — protecting you from risky visits.</p>
+        </div>
+        <div class="safety-card">
+          <div class="icon">🌊</div>
+          <h4>Environmental Advisories</h4>
+          <p>Flash flood warnings, water pollution alerts, trail closures, and seasonal hazard reports keep you informed of dynamic trail conditions.</p>
+        </div>
+        <div class="safety-card">
+          <div class="icon">📞</div>
+          <h4>Emergency Contacts</h4>
+          <p>Every location listing includes direct emergency contact numbers for on-site rangers, reserve management, and local emergency services.</p>
+        </div>
+        <div class="safety-card">
+          <div class="icon">👥</div>
+          <h4>Verified Community Reviews</h4>
+          <p>Real hikers, real experiences. Our Trail Marshal system uses experienced Durban Ramblers members to verify and validate safety reports.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- All Locations -->
+  <section class="section" style="background:var(--white)">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <h2>🗺️ All KZN Destinations</h2>
+          <p>Ranked by Weighted Desirability Index (Safety + Parking + Environment + Cleanliness – Cost)</p>
+        </div>
+      </div>
+      <div class="cards-grid" id="all-cards">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Section -->
+  <section class="badges-section">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <h2>🏅 Trail Achievement Badges</h2>
+          <p>Earn badges by exploring KZN's outdoor destinations and contributing to the community</p>
+        </div>
+      </div>
+      <div class="badges-grid">
+        <div class="badge-card">
+          <div class="badge-icon">🦓</div>
+          <div class="badge-name">Zebra Scout</div>
+          <div class="badge-desc">Log a visit and review at Kenneth Stainbank Nature Reserve</div>
+        </div>
+        <div class="badge-card">
+          <div class="badge-icon">🦅</div>
+          <div class="badge-name">Gorge Master</div>
+          <div class="badge-desc">Complete Krantzkloof's Molweni or Beacon Trail</div>
+        </div>
+        <div class="badge-card">
+          <div class="badge-icon">💧</div>
+          <div class="badge-name">Waterfall Chaser</div>
+          <div class="badge-desc">Review 3 different waterfall locations in KZN</div>
+        </div>
+        <div class="badge-card">
+          <div class="badge-icon">🚵</div>
+          <div class="badge-name">Single Track Legend</div>
+          <div class="badge-desc">Ride all trail grades at Giba Gorge MTB Park</div>
+        </div>
+        <div class="badge-card">
+          <div class="badge-icon">🐦</div>
+          <div class="badge-name">Kingfisher</div>
+          <div class="badge-desc">Log 5+ bird species sightings across KZN reserves</div>
+        </div>
+        <div class="badge-card">
+          <div class="badge-icon">🌿</div>
+          <div class="badge-name">Hidden Gem Finder</div>
+          <div class="badge-desc">Be the first to review a new, unrated location</div>
+        </div>
+        <div class="badge-card">
+          <div class="badge-icon">🛡️</div>
+          <div class="badge-name">Trail Marshal</div>
+          <div class="badge-desc">Verified safety contributor — 10+ validated alerts</div>
+        </div>
+        <div class="badge-card">
+          <div class="badge-icon">🆓</div>
+          <div class="badge-name">Free Ranger</div>
+          <div class="badge-desc">Explore all free reserves in the Durban area</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section" style="background:var(--green-pale)">
+    <div class="container">
+      <div class="section-header" style="justify-content:center;text-align:center">
+        <div>
+          <h2>How KZN Hidden Gems Works</h2>
+          <p>Your community-powered outdoor safety network</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center">
+        <div>
+          <div style="font-size:2.5rem;margin-bottom:12px">🔍</div>
+          <h4 style="font-weight:700;margin-bottom:6px">1. Search & Discover</h4>
+          <p style="font-size:0.875rem;color:var(--text-mid);line-height:1.6">Find trails, reserves, and hidden gems by location, tag, or safety score</p>
+        </div>
+        <div>
+          <div style="font-size:2.5rem;margin-bottom:12px">📊</div>
+          <h4 style="font-weight:700;margin-bottom:6px">2. Check Safety Scores</h4>
+          <p style="font-size:0.875rem;color:var(--text-mid);line-height:1.6">Review the weighted Desirability Index, parking type, and active alerts before you go</p>
+        </div>
+        <div>
+          <div style="font-size:2.5rem;margin-bottom:12px">🥾</div>
+          <h4 style="font-weight:700;margin-bottom:6px">3. Explore Safely</h4>
+          <p style="font-size:0.875rem;color:var(--text-mid);line-height:1.6">Navigate with confidence using community-verified trail info and emergency contacts</p>
+        </div>
+        <div>
+          <div style="font-size:2.5rem;margin-bottom:12px">✍️</div>
+          <h4 style="font-weight:700;margin-bottom:6px">4. Share & Protect</h4>
+          <p style="font-size:0.875rem;color:var(--text-mid);line-height:1.6">Submit reviews and safety alerts to protect fellow outdoor enthusiasts</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /home-page -->
+
+<!-- ===================== ABOUT PAGE ===================== -->
+<div id="about-page" style="display:none">
+  <div style="background:linear-gradient(135deg,var(--green-deep),var(--green-mid));color:white;padding:60px 24px;text-align:center">
+    <h1 style="font-size:2.5rem;font-weight:800;margin-bottom:12px">About KZN Hidden Gems</h1>
+    <p style="font-size:1.1rem;opacity:0.8;max-width:600px;margin:0 auto">A community-driven platform built to help KwaZulu-Natal residents explore the outdoors safely and confidently.</p>
+  </div>
+  <div class="container" style="padding:48px 24px;max-width:800px">
+    <div class="card-box" style="margin-bottom:24px">
+      <h3>🌿 Our Mission</h3>
+      <p style="color:var(--text-mid);line-height:1.8;font-size:0.95rem">
+        KZN Hidden Gems was built to solve a critical problem in South African outdoor recreation: the lack of a trusted, safety-first platform dedicated to KwaZulu-Natal's diverse natural spaces.
+        <br/><br/>
+        Global platforms like AllTrails and iOverlander lack the hyper-local granularity needed to navigate KZN's complex mix of community reserves, provincial parks, and privately managed nature areas — each with unique security conditions, payment requirements, and environmental hazards.
+        <br/><br/>
+        Our platform addresses this gap by providing a weighted Desirability and Safety Index (D_i) that prioritizes personal security and parking safety above all other factors — because in KZN, safety is the ultimate gatekeeper for outdoor recreation.
+      </p>
+    </div>
+
+    <div class="card-box" style="margin-bottom:24px">
+      <h3>📐 The Desirability Index Formula</h3>
+      <div style="background:var(--bg);padding:16px;border-radius:8px;font-family:monospace;font-size:0.9rem;margin-bottom:12px">
+        D_i = (0.35 × Safety) + (0.25 × Parking) + (0.15 × Environment) + (0.15 × Cleanliness) − (0.10 × Cost)
+      </div>
+      <p style="color:var(--text-mid);font-size:0.875rem;line-height:1.7">
+        Safety (35%) and Parking Security (25%) together account for 60% of a location's overall score.
+        A stunning location with poor personal security or unsecured trailhead parking will score significantly lower,
+        preventing users from stumbling into risky situations. This formula is calibrated specifically for the Durban urban-wilderness interface.
+      </p>
+    </div>
+
+    <div class="card-box" style="margin-bottom:24px">
+      <h3>🤝 Community Partners</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="padding:12px;background:var(--bg);border-radius:8px">
+          <div style="font-weight:700;margin-bottom:4px">🏃 Durban Ramblers Hiking Club</div>
+          <div style="font-size:0.82rem;color:var(--text-mid)">Est. 1932 · Weekly Wed & Sat hikes · Trail Marshal verification program</div>
+        </div>
+        <div style="padding:12px;background:var(--bg);border-radius:8px">
+          <div style="font-weight:700;margin-bottom:4px">🧭 Durban Hiking & Adventures</div>
+          <div style="font-size:0.82rem;color:var(--text-mid)">Founded by Roland Smith · Group hikes, night walks, cultural tours across KZN</div>
+        </div>
+        <div style="padding:12px;background:var(--bg);border-radius:8px">
+          <div style="font-weight:700;margin-bottom:4px">🦅 Ezemvelo KZN Wildlife</div>
+          <div style="font-size:0.82rem;color:var(--text-mid)">Provincial conservation authority managing Krantzkloof & Kenneth Stainbank</div>
+        </div>
+        <div style="padding:12px;background:var(--bg);border-radius:8px">
+          <div style="font-weight:700;margin-bottom:4px">🔒 Winston Park Guardians</div>
+          <div style="font-size:0.82rem;color:var(--text-mid)">Community security patrol protecting the Giba Gorge Environmental Precinct</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-box">
+      <h3>📬 Contact & Contribute</h3>
+      <p style="color:var(--text-mid);font-size:0.875rem;line-height:1.7;margin-bottom:16px">
+        Know a hidden gem we've missed? Want to become a verified Trail Marshal?
+        Submit reviews and safety alerts directly from any location page.
+        Community contributions keep this platform accurate and life-saving.
+      </p>
+      <button class="btn btn-primary" onclick="showPage('explorer');initMap();renderExplorerSidebar(KZN_DATA.locations);renderMapMarkers(KZN_DATA.locations)">
+        🗺️ Start Exploring
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="brand-name">🌿 KZN Hidden Gems</div>
+        <p>Durban and KwaZulu-Natal's community-powered outdoor discovery platform. Safety-first trail guides, real-time alerts, and verified reviews from the people who hike these trails every week.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Explore</h5>
+        <ul>
+          <li><a href="#" onclick="showPage('explorer');initMap();applyFilter('all');return false">Map Explorer</a></li>
+          <li><a href="#" onclick="showPage('explorer');initMap();applyFilter('free');return false">Free Parks</a></li>
+          <li><a href="#" onclick="showPage('explorer');initMap();applyFilter('family');return false">Family Friendly</a></li>
+          <li><a href="#" onclick="showPage('explorer');initMap();applyFilter('wildlife');return false">Wildlife Reserves</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Safety</h5>
+        <ul>
+          <li><a href="#" onclick="showPage('explorer');initMap();applyFilter('alerts');return false">Active Alerts</a></li>
+          <li><a href="#" onclick="openReportModal('');return false">Report Hazard</a></li>
+          <li><a href="#" onclick="showPage('about');return false">Trail Marshals</a></li>
+          <li><a href="#" onclick="showPage('about');return false">DI Formula</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>About</h5>
+        <ul>
+          <li><a href="#" onclick="showPage('about');return false">Our Mission</a></li>
+          <li><a href="#" onclick="showPage('about');return false">Partners</a></li>
+          <li><a href="#" onclick="showPage('about');return false">Green Flag Trails</a></li>
+          <li><a href="#" onclick="showPage('about');return false">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 KZN Hidden Gems · Built for the KwaZulu-Natal outdoor community</span>
+      <span>Data sourced from community reviews · Always verify conditions before visiting</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== REVIEW MODAL ===================== -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModals()">
+  <div class="modal" id="review-modal" style="max-width:560px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 class="modal-title" style="margin:0">⭐ Rate & Review</h3>
+      <button class="modal-close" onclick="closeModals()">✕</button>
+    </div>
+    <input type="hidden" id="review-location-id" />
+
+    <!-- Name -->
+    <div class="form-group" style="margin-bottom:12px">
+      <label style="font-size:0.82rem;font-weight:600;margin-bottom:5px;display:block">Your Name or Trail Handle</label>
+      <input type="text" id="review-user" placeholder="e.g. TrailRunner_KZN" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.9rem;width:100%;outline:none" />
+    </div>
+
+    <!-- Visual Star Ratings -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Your Ratings</div>
+
+      <div class="star-rating-row">
+        <span class="star-label">🛡 Safety</span>
+        <div class="star-rating-visual" data-score="safety" data-value="0">
+          <span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span>
+          <span class="star-val">—</span>
+        </div>
+      </div>
+      <div class="star-rating-row">
+        <span class="star-label">🅿 Parking</span>
+        <div class="star-rating-visual" data-score="parking" data-value="0">
+          <span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span>
+          <span class="star-val">—</span>
+        </div>
+      </div>
+      <div class="star-rating-row">
+        <span class="star-label">🧹 Cleanliness</span>
+        <div class="star-rating-visual" data-score="cleanliness" data-value="0">
+          <span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span>
+          <span class="star-val">—</span>
+        </div>
+      </div>
+      <div class="star-rating-row">
+        <span class="star-label">💳 Value</span>
+        <div class="star-rating-visual" data-score="cost" data-value="0">
+          <span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span>
+          <span class="star-val">—</span>
+        </div>
+      </div>
+      <div class="star-rating-row">
+        <span class="star-label">🌿 Environment</span>
+        <div class="star-rating-visual" data-score="environmental" data-value="0">
+          <span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span><span class="star-btn">★</span>
+          <span class="star-val">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review text -->
+    <div class="form-group" style="margin-bottom:14px">
+      <label style="font-size:0.82rem;font-weight:600;margin-bottom:5px;display:block">Your Review</label>
+      <textarea id="review-comment" rows="3" placeholder="Describe your experience — trail conditions, safety, parking, any hazards noticed…" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.875rem;resize:vertical;outline:none;font-family:inherit"></textarea>
+    </div>
+
+    <!-- Photo Upload -->
+    <div class="form-group" style="margin-bottom:16px">
+      <label style="font-size:0.82rem;font-weight:600;margin-bottom:8px;display:block">📸 Add Your Photos <span style="color:var(--text-light);font-weight:400">(optional)</span></label>
+      <div class="photo-upload-zone" id="photo-upload-zone">
+        <input type="file" id="photo-file-input" accept="image/*" multiple />
+        <div class="upload-icon">📷</div>
+        <div class="upload-title">Click or drag photos here</div>
+        <div class="upload-sub" id="upload-count-hint">Up to 5 photos · JPEG/PNG/WEBP</div>
+      </div>
+      <div class="upload-thumbs" id="upload-thumbs"></div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:0.95rem;padding:12px" onclick="submitReview()">
+      ✅ Submit Review & Photos
+    </button>
+  </div>
+</div>
+
+<!-- ===================== PHOTO LIGHTBOX ===================== -->
+<div id="photo-lightbox" onclick="if(event.target===this)closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <button class="lb-nav lb-prev" onclick="lightboxPrev()">‹</button>
+  <img id="lb-img" src="" alt="Community photo" />
+  <div class="lb-caption" id="lb-caption"></div>
+  <button class="lb-nav lb-next" onclick="lightboxNext()">›</button>
+</div>
+
+<!-- ===================== ALERT MODAL ===================== -->
+<div class="modal-overlay" id="alert-overlay" onclick="if(event.target===this)closeModals()">
+  <div class="modal" id="report-modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="margin:0">⚠️ Report Safety Alert</h3>
+      <button class="modal-close" onclick="closeModals()">✕</button>
+    </div>
+    <input type="hidden" id="report-location-id" />
+
+    <div class="form-group">
+      <label>Alert Category</label>
+      <select id="alert-category">
+        <option value="Security Incident">🚨 Security Incident</option>
+        <option value="Flash Flood">🌊 Flash Flood</option>
+        <option value="Water Pollution">☣️ Water Pollution</option>
+        <option value="Trail Obstruction">🌳 Trail Obstruction</option>
+        <option value="Weather Closure">⛈️ Weather Closure</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Severity Level</label>
+      <select id="alert-severity">
+        <option value="Low">Low — Minor inconvenience</option>
+        <option value="Medium" selected>Medium — Caution advised</option>
+        <option value="High">High — Avoid if possible</option>
+        <option value="Critical">Critical — Do not visit</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Alert Details</label>
+      <textarea id="alert-details" rows="3" placeholder="Describe exactly what you observed — location on trail, time, severity…"></textarea>
+    </div>
+
+    <div style="background:#fff8e1;border-radius:8px;padding:10px 12px;font-size:0.8rem;color:#856404;margin-bottom:16px">
+      ⚠️ False alerts harm the community. Only submit verified, first-hand observations.
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;background:var(--red-alert)" onclick="submitAlert()">🚨 Submit Safety Alert</button>
+  </div>
+</div>
+
+<!-- ===================== SCROLL TO TOP ===================== -->
+<button class="scroll-top" title="Back to top">↑</button>
+
+<!-- ===================== ADMIN PAGE ===================== -->
+<div id="admin-page">
+  <div class="admin-topbar">
+    <h2>⚙️ KZN Hidden Gems — Admin Panel</h2>
+    <div class="admin-topbar-actions">
+      <button class="btn btn-outline" onclick="showPage('home')">← Back to Site</button>
+      <button class="btn" style="background:var(--red-alert);color:white" onclick="closeAdminPanel()">🔒 Log Out</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+    <!-- Stats row -->
+    <div class="admin-stats">
+      <div class="admin-stat-card">
+        <div class="stat-icon">📍</div>
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-lbl">Total Locations</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="stat-icon">✨</div>
+        <div class="stat-num" id="stat-custom">0</div>
+        <div class="stat-lbl">Custom Added</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-num" id="stat-alerts">0</div>
+        <div class="stat-lbl">Active Alerts</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="stat-icon">💬</div>
+        <div class="stat-num" id="stat-reviews">0</div>
+        <div class="stat-lbl">Community Reviews</div>
+      </div>
+    </div>
+
+    <!-- Tab switcher -->
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" onclick="switchAdminTab('add')">➕ Add / Edit Location</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('list')">📋 All Locations</button>
+    </div>
+
+    <!-- TAB: Add/Edit Form -->
+    <div class="admin-tab-panel active" id="admin-tab-add">
+      <div class="admin-form-panel" id="admin-form-panel" style="max-width:680px;margin:0 auto">
+        <div class="admin-form-header">
+          <h3 id="admin-form-title">➕ Add New Location</h3>
+        </div>
+
+        <div class="admin-form-body">
+          <!-- Live DI preview -->
+          <div class="di-preview-bar">
+            <div class="di-num" id="di-preview-num">3.33</div>
+            <div class="di-lbl">Estimated Desirability Index (no reviews yet)</div>
+          </div>
+
+          <form id="admin-location-form" onsubmit="return false">
+            <input type="hidden" id="field-id" />
+
+            <!-- ══ SMART FILL ══════════════════════════════════════════════ -->
+            <div style="background:linear-gradient(135deg,#1a4a2e,#2d7a4f);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px">
+              <div style="color:white;font-weight:800;font-size:0.95rem;margin-bottom:4px">🧠 Smart Fill from Wikipedia</div>
+              <div style="color:rgba(255,255,255,0.75);font-size:0.78rem;margin-bottom:10px">
+                Type a place name — we'll look it up on Wikipedia &amp; OpenStreetMap and auto-fill every field we can find.
+              </div>
+              <div style="display:flex;gap:8px">
+                <input
+                  type="text"
+                  id="sf-input"
+                  placeholder="e.g. Krantzkloof Nature Reserve…"
+                  autocomplete="off"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();runSmartFill()}"
+                  style="flex:1;padding:9px 13px;border:none;border-radius:var(--radius-sm);font-size:0.875rem;outline:none;background:rgba(255,255,255,0.95)"
+                />
+                <button type="button" onclick="runSmartFill()"
+                  style="background:#4aab70;color:white;border:none;border-radius:var(--radius-sm);padding:9px 16px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap">
+                  🔍 Search &amp; Fill
+                </button>
+                <button type="button" onclick="clearSmartFill()"
+                  style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:var(--radius-sm);padding:9px 12px;font-size:0.82rem;cursor:pointer">
+                  ✕
+                </button>
+              </div>
+              <div id="sf-status" style="display:none;margin-top:10px;padding:8px 12px;border-radius:var(--radius-sm);font-size:0.82rem;font-weight:600;line-height:1.5"></div>
+            </div>
+            <!-- ══ END SMART FILL ══════════════════════════════════════════ -->
+
+            <div class="admin-form-section">📝 Basic Information</div>
+            <div class="form-group">
+              <label>Location Name <span style="color:var(--red-alert)">*</span></label>
+              <input type="text" id="field-name" placeholder="e.g. Shongweni Dam Nature Reserve" oninput="updateDIPreview()" />
+            </div>
+            <div class="form-group">
+              <label>Tagline</label>
+              <input type="text" id="field-tagline" placeholder="e.g. Dam fishing, birding & forest walks" />
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="field-description" rows="4" placeholder="Full description…"></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Area / Suburb <span style="color:var(--red-alert)">*</span></label>
+                <input type="text" id="field-location" placeholder="e.g. Shongweni, KZN" />
+              </div>
+              <div class="form-group">
+                <label>Management Authority</label>
+                <input type="text" id="field-management" placeholder="e.g. eThekwini Municipality" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Size (Hectares)</label>
+                <input type="number" id="field-hectares" placeholder="e.g. 150" min="0" step="0.1" />
+              </div>
+              <div class="form-group">
+                <label>Opening Hours</label>
+                <input type="text" id="field-hours" placeholder="e.g. 06:00 – 18:00 Daily" />
+              </div>
+            </div>
+
+            <div class="admin-form-section">📍 Coordinates</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Latitude <span style="color:var(--red-alert)">*</span></label>
+                <input type="number" id="field-lat" placeholder="-29.8500" step="0.00001" />
+              </div>
+              <div class="form-group">
+                <label>Longitude <span style="color:var(--red-alert)">*</span></label>
+                <input type="number" id="field-lng" placeholder="30.9000" step="0.00001" />
+              </div>
+            </div>
+            <button type="button" id="toggle-map-btn" onclick="toggleCoordMap()"
+              style="width:100%;padding:9px;background:var(--bg);border:1.5px dashed var(--border);border-radius:var(--radius-sm);color:var(--text-mid);font-size:0.85rem;font-weight:600;cursor:pointer;margin-bottom:6px">
+              🗺️ Show Map to Pin Location
+            </button>
+            <div id="coord-map-picker" style="display:none"></div>
+
+            <div class="admin-form-section">💳 Entry Fees & Access</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Payment Method</label>
+                <select id="field-payment">
+                  <option value="Free">Free</option>
+                  <option value="Card Only">Card Only</option>
+                  <option value="Cash Only">Cash Only</option>
+                  <option value="Cash &amp; Card">Cash &amp; Card</option>
+                  <option value="Ezemvelo Rhino Card">Ezemvelo Rhino Card</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Entry Fee – Adult (R)</label>
+                <input type="number" id="field-fee-adult" placeholder="0" min="0" step="1" oninput="updateDIPreview()" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Entry Fee – Child (R)</label>
+                <input type="number" id="field-fee-child" placeholder="0" min="0" step="1" />
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" id="field-phone" placeholder="+27 31 000 0000" />
+              </div>
+            </div>
+
+            <div class="admin-form-section">🔒 Parking & Security</div>
+            <div class="form-group">
+              <label>Parking Type</label>
+              <select id="field-parking">
+                <option value="Fenced Guarded Interior">🔒 Fenced Guarded Interior</option>
+                <option value="Guarded Public Lot">🛡 Guarded Public Lot</option>
+                <option value="Open Public Lot">🅿 Open Public Lot</option>
+                <option value="Unsecured Roadside">⚠️ Unsecured Roadside</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Parking Notes</label>
+              <input type="text" id="field-parking-notes" placeholder="e.g. Limited spaces at entrance, arrive early on weekends" />
+            </div>
+
+            <div class="admin-form-section">🏷️ Tags, Hazards & Regulations</div>
+            <div class="form-group">
+              <label>Tags (comma-separated)</label>
+              <input type="text" id="field-tags" placeholder="Hiking, Birdwatching, Family, Free" />
+            </div>
+            <div class="form-group">
+              <label>Key Attractions (one per line)</label>
+              <textarea id="field-attractions" rows="3" placeholder="Main waterfall&#10;Resident vervet monkeys&#10;Forest canopy trail"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Hazards (one per line)</label>
+              <textarea id="field-hazards" rows="3" placeholder="Slippery paths after rain&#10;Flash flood risk in gorge"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Rules & Regulations (one per line)</label>
+              <textarea id="field-regulations" rows="3" placeholder="No pets allowed&#10;No alcohol&#10;Keep to marked paths"></textarea>
+            </div>
+
+            <div class="admin-form-section">🖼️ Photo</div>
+            <div class="form-group">
+              <label>Photo URL</label>
+              <input type="url" id="field-photo" placeholder="https://loremflickr.com/1000/500/waterfall,forest/all" />
+              <div class="form-hint">Tip: use <strong>loremflickr.com</strong> — e.g. <code>https://loremflickr.com/1000/500/forest,river/all</code></div>
+              <img id="preview-photo" class="photo-preview" alt="Photo preview" />
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:10px">
+              <input type="checkbox" id="field-featured" style="width:auto;height:16px;accent-color:var(--green-mid)" />
+              <label for="field-featured" style="margin:0;cursor:pointer">⭐ Mark as Featured Destination</label>
+            </div>
+          </form>
+        </div>
+
+        <div class="admin-form-footer">
+          <button class="btn btn-ghost" id="admin-form-cancel-edit" style="display:none" onclick="resetAdminForm()">✕ Cancel Edit</button>
+          <button class="btn btn-primary" id="admin-form-submit-btn" onclick="submitAdminForm()">✅ Save Location</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Location table -->
+    <div class="admin-tab-panel" id="admin-tab-list">
+      <div class="admin-table-wrap">
+        <div class="admin-table-header">
+          <h3>📋 All Locations</h3>
+          <input type="text" id="admin-table-search" class="admin-search-input" placeholder="🔍 Search locations…" />
+        </div>
+        <div style="overflow-x:auto">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>DI Score</th>
+                <th>Entry Fee</th>
+                <th>Alerts</th>
+                <th>Reviews</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /admin-tab-list -->
+  </div><!-- /admin-body -->
+</div><!-- /admin-page -->
+
+<!-- ===================== ADMIN LOGIN OVERLAY ===================== -->
+<div class="modal-overlay" id="admin-login-overlay" onclick="if(event.target===this)closeAdminLogin()">
+  <div class="admin-login-box">
+    <div class="lock-icon">🔐</div>
+    <h3>Admin Access</h3>
+    <p>Enter your admin password to manage KZN Hidden Gems locations</p>
+    <div class="admin-login-error" id="admin-login-error">❌ Incorrect password. Please try again.</div>
+    <input type="password" id="admin-pass-input" placeholder="Enter password…" />
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="attemptAdminLogin()">🔓 Login</button>
+    <div class="admin-login-hint">Default password: <code>KZN@dmin2026</code></div>
+  </div>
+</div>
+
+<!-- ===================== DELETE CONFIRM OVERLAY ===================== -->
+<div class="delete-confirm-overlay" id="delete-confirm-overlay">
+  <div class="delete-confirm-box">
+    <div class="del-icon">🗑️</div>
+    <h4>Delete Location?</h4>
+    <p>Are you sure you want to permanently delete <strong id="delete-loc-name"></strong>? This cannot be undone.</p>
+    <div class="delete-confirm-actions">
+      <button class="btn btn-ghost" onclick="cancelDelete()">Cancel</button>
+      <button class="btn" style="background:var(--red-alert);color:white" onclick="executeDelete()">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js?v=2"></script>
+<script src="js/storage.js?v=2"></script>
+<script src="js/app.js?v=9"></script>
+<script src="js/photos.js?v=1"></script>
+<script src="js/smartfill.js?v=2"></script>
+<script src="js/admin.js?v=8"></script>
+
+<script>
+  // Sidebar search filter
+  function filterSidebar(query) {
+    const q = query.toLowerCase();
+    if (!q) {
+      renderExplorerSidebar(KZN_DATA.locations);
+      return;
+    }
+    const filtered = KZN_DATA.locations.filter(l =>
+      l.name.toLowerCase().includes(q) ||
+      l.location.toLowerCase().includes(q) ||
+      l.tags.some(t => t.toLowerCase().includes(q))
+    );
+    renderExplorerSidebar(filtered);
+  }
+
+  // Open report modal without location context (from nav)
+  const _origOpenReport = window.openReportModal;
+  window.openReportModal = function(locId) {
+    if (!locId) {
+      // If no specific location, show a location selector
+      const modal = document.getElementById('report-modal');
+      const locationSelect = `
+        <div class="form-group" id="location-selector-group">
+          <label>Location</label>
+          <select id="alert-location-select" onchange="document.getElementById('report-location-id').value=this.value">
+            <option value="">Select a location…</option>
+            ${KZN_DATA.locations.map(l => `<option value="${l.id}">${l.name}</option>`).join('')}
+          </select>
+        </div>
+      `;
+      const existing = modal.querySelector('#location-selector-group');
+      if (!existing) {
+        modal.querySelector('input[type="hidden"]').insertAdjacentHTML('afterend', locationSelect);
+      }
+    }
+    _origOpenReport(locId);
+  };
+</script>
+
+</body>
+</html>
