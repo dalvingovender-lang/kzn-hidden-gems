@@ -30,7 +30,7 @@ const KZN_DATA = {
       alerts: [
         { category: "Flash Flood", severity: "Medium", details: "Molweni River crossing may be impassable after heavy rain. Check conditions at the gate before attempting lower gorge trails.", active: true }
       ],
-      photo: "https://loremflickr.com/1000/500/gorge,forest,waterfall/all",
+      photo: "https://images.unsplash.com/photo-1469022563148-aa0dde2a6c1e?w=1000&h=500&fit=crop",
       photoCredit: "Photo: Unsplash",
       images: ["krantzkloof1", "krantzkloof2"],
       featured: true
@@ -63,7 +63,7 @@ const KZN_DATA = {
         { user: "WeekendAdventurer", date: "2026-04-20", safety: 5, parking: 5, cleanliness: 4, cost: 2, environmental: 5, comment: "Absolutely beautiful gorge. A bit pricey but the infrastructure justifies it. No cash? No problem – tap-and-go available. Bring the whole family." }
       ],
       alerts: [],
-      photo: "https://loremflickr.com/1000/500/mountain,bike,trail/all",
+      photo: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1000&h=500&fit=crop",
       photoCredit: "Photo: Unsplash",
       images: ["giba1", "giba2"],
       featured: true
@@ -98,7 +98,7 @@ const KZN_DATA = {
       alerts: [
         { category: "Trail Obstruction", severity: "Low", details: "Several fallen trees on the upper river path after recent storms. The lower cement path and entrance trails are fully clear.", active: true }
       ],
-      photo: "https://loremflickr.com/1000/500/river,forest,nature/all",
+      photo: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1000&h=500&fit=crop",
       photoCredit: "Photo: Unsplash",
       images: ["palmiet1", "palmiet2"],
       featured: false
@@ -133,7 +133,7 @@ const KZN_DATA = {
       alerts: [
         { category: "Water Pollution", severity: "High", details: "Upstream sewer overflow detected. High E. coli levels in the Umbilo River. Swimming and wading is strictly prohibited until further notice.", active: true }
       ],
-      photo: "https://loremflickr.com/1000/500/waterfall,valley,jungle/all",
+      photo: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1000&h=500&fit=crop",
       photoCredit: "Photo: Unsplash",
       images: ["paradise1", "paradise2"],
       featured: false
@@ -166,7 +166,7 @@ const KZN_DATA = {
         { user: "FamilyDay_KZN", date: "2026-04-18", safety: 5, parking: 5, cleanliness: 5, cost: 3, environmental: 5, comment: "Best family outing in Durban. My kids couldn't believe the zebras were just walking around freely. Immaculate reserve. Secure, well-run, and reasonably priced." }
       ],
       alerts: [],
-      photo: "https://loremflickr.com/1000/500/zebra,savanna,wildlife/all",
+      photo: "https://images.unsplash.com/photo-1606471191009-63159ec98341?w=1000&h=500&fit=crop",
       photoCredit: "Photo: Unsplash",
       images: ["stainbank1", "stainbank2"],
       featured: true
@@ -199,7 +199,7 @@ const KZN_DATA = {
         { user: "InterpretiveTrailFan", date: "2026-05-02", safety: 3, parking: 3, cleanliness: 3, cost: 5, environmental: 4, comment: "Interpretive trail signs need updating. Some information boards are damaged. But the forest itself is lovely. Security definitely improved. Walk in groups to be safe." }
       ],
       alerts: [],
-      photo: "https://loremflickr.com/1000/500/forest,birds,path/all",
+      photo: "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=1000&h=500&fit=crop",
       photoCredit: "Photo: Unsplash",
       images: ["burman1", "burman2"],
       featured: false
@@ -231,7 +231,7 @@ const KZN_DATA = {
         { user: "NaturalistKZN", date: "2026-05-08", safety: 4, parking: 3, cleanliness: 5, cost: 5, environmental: 5, comment: "Found 3 rare orchid species on the gorge slopes! The community management model is inspirational. Dense, beautiful forest. Some trails are rough – bring good shoes." }
       ],
       alerts: [],
-      photo: "https://loremflickr.com/1000/500/forest,conservation,green/all",
+      photo: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1000&h=500&fit=crop",
       photoCredit: "Photo: Unsplash",
       images: ["ggep1", "ggep2"],
       featured: false
