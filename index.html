@@ -30,8 +30,8 @@
   <a href="#" class="nav-brand" onclick="showPage('home');return false">
     <div class="logo-icon">🌿</div>
     <div>
-      <span class="brand-name">KZN Hidden Gems</span>
-      <span class="brand-sub">Durban & KwaZulu-Natal</span>
+      <span class="brand-name" data-edit="nav.brand">KZN Hidden Gems</span>
+      <span class="brand-sub" data-edit="nav.tagline">Durban & KwaZulu-Natal</span>
     </div>
   </a>
 
@@ -101,10 +101,10 @@
     <div class="hero-content">
       <div class="hero-badge">
         <span>🌿</span>
-        <span>KwaZulu-Natal's #1 Outdoor Discovery Platform</span>
+        <span data-edit="hero.badge">KwaZulu-Natal's #1 Outdoor Discovery Platform</span>
       </div>
-      <h1>Find Your <span>Next Adventure</span><br/>in KZN</h1>
-      <p>
+      <h1 data-edit="hero.title">Find Your Next Adventure in KZN</h1>
+      <p data-edit="hero.subtitle">
         Discover Durban's hidden outdoor gems — from gorge reserves to coastal forests.
         Real-time safety alerts, parking security scores, and community-verified reviews.
         Built for South Africans who love nature and value their safety.
@@ -115,20 +115,20 @@
       </div>
       <div class="hero-stats">
         <div class="hero-stat">
-          <div class="stat-num">23</div>
-          <div class="stat-label">Verified Locations</div>
+          <div class="stat-num" data-edit="stat1.num">23</div>
+          <div class="stat-label" data-edit="stat1.label">Verified Locations</div>
         </div>
         <div class="hero-stat">
-          <div class="stat-num">37</div>
-          <div class="stat-label">Community Reviews</div>
+          <div class="stat-num" data-edit="stat2.num">37</div>
+          <div class="stat-label" data-edit="stat2.label">Community Reviews</div>
         </div>
         <div class="hero-stat">
-          <div class="stat-num">4,400ha+</div>
-          <div class="stat-label">Mapped Terrain</div>
+          <div class="stat-num" data-edit="stat3.num">4,400ha+</div>
+          <div class="stat-label" data-edit="stat3.label">Mapped Terrain</div>
         </div>
         <div class="hero-stat">
-          <div class="stat-num">Real-Time</div>
-          <div class="stat-label">Safety Alerts</div>
+          <div class="stat-num" data-edit="stat4.num">Real-Time</div>
+          <div class="stat-label" data-edit="stat4.label">Safety Alerts</div>
         </div>
       </div>
     </div>
@@ -155,8 +155,8 @@
     <div class="container">
       <div class="section-header">
         <div>
-          <h2>⭐ Featured Destinations</h2>
-          <p>Our top-rated, safety-verified outdoor gems near Durban</p>
+          <h2 data-edit="featured.title">⭐ Featured Destinations</h2>
+          <p data-edit="featured.subtitle">Our top-rated, safety-verified outdoor gems near Durban</p>
         </div>
         <button class="btn btn-primary" id="open-explorer-btn">View All on Map →</button>
       </div>
@@ -170,8 +170,8 @@
   <section class="safety-section">
     <div class="container">
       <div style="text-align:center;max-width:600px;margin:0 auto 0 auto">
-        <h2 style="font-size:2rem;font-weight:800;color:white;margin-bottom:12px">Safety is our Priority</h2>
-        <p style="color:rgba(255,255,255,0.75);font-size:1rem;line-height:1.7">
+        <h2 style="font-size:2rem;font-weight:800;color:white;margin-bottom:12px" data-edit="safety.title">Safety is our Priority</h2>
+        <p style="color:rgba(255,255,255,0.75);font-size:1rem;line-height:1.7" data-edit="safety.subtitle">
           In KwaZulu-Natal, personal security is the ultimate gatekeeper for outdoor recreation.
           Our weighted Desirability Index gives 60% combined weight to personal safety and parking security —
           because your safety comes first, always.
@@ -217,8 +217,8 @@
     <div class="container">
       <div class="section-header">
         <div>
-          <h2>🗺️ All KZN Destinations</h2>
-          <p>Ranked by Weighted Desirability Index (Safety + Parking + Environment + Cleanliness – Cost)</p>
+          <h2 data-edit="all.title">🗺️ All KZN Destinations</h2>
+          <p data-edit="all.subtitle">Ranked by Weighted Desirability Index (Safety + Parking + Environment + Cleanliness – Cost)</p>
         </div>
       </div>
       <div class="cards-grid" id="all-cards">
@@ -388,8 +388,8 @@
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand">
-        <div class="brand-name">🌿 KZN Hidden Gems</div>
-        <p>Durban and KwaZulu-Natal's community-powered outdoor discovery platform. Safety-first trail guides, real-time alerts, and verified reviews from the people who hike these trails every week.</p>
+        <div class="brand-name" data-edit="footer.brand">🌿 KZN Hidden Gems</div>
+        <p data-edit="footer.about">Durban and KwaZulu-Natal's community-powered outdoor discovery platform. Safety-first trail guides, real-time alerts, and verified reviews from the people who hike these trails every week.</p>
       </div>
       <div class="footer-col">
         <h5>Explore</h5>
@@ -420,7 +420,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 KZN Hidden Gems · Built for the KwaZulu-Natal outdoor community</span>
+      <span data-edit="footer.copyright">© 2026 KZN Hidden Gems · Built for the KwaZulu-Natal outdoor community</span>
       <span>Data sourced from community reviews · Always verify conditions before visiting</span>
     </div>
   </div>
@@ -600,6 +600,7 @@
     <div class="admin-tabs">
       <button class="admin-tab-btn active" onclick="switchAdminTab('add')">➕ Add / Edit Location</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('list')">📋 All Locations</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('content')">✏️ Site Content</button>
     </div>
 
     <!-- TAB: Add/Edit Form -->
@@ -805,6 +806,33 @@
       </div>
 
     </div><!-- /admin-tab-list -->
+
+    <!-- TAB: Site Content Editor -->
+    <div class="admin-tab-panel" id="admin-tab-content">
+      <div class="admin-form-panel" style="max-width:680px;margin:0 auto">
+        <div class="admin-form-header" style="display:flex;align-items:center;justify-content:space-between">
+          <h3>✏️ Edit Site Text</h3>
+          <button class="btn btn-ghost" onclick="resetSiteContent()" style="font-size:0.8rem">↩️ Reset to Defaults</button>
+        </div>
+
+        <div class="admin-form-body">
+          <p style="font-size:0.85rem;color:var(--text-mid,#445544);margin-bottom:16px;line-height:1.6">
+            Change any wording on the site below. Click <strong>Save Changes</strong> and it updates instantly —
+            the homepage hero, statistics, section headings, safety blurb, and footer.
+          </p>
+
+          <div id="content-editor-status" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:8px;font-size:0.85rem;font-weight:600"></div>
+
+          <div id="content-editor-fields"><!-- built by content.js --></div>
+        </div>
+
+        <div class="admin-form-footer">
+          <button class="btn btn-primary" onclick="saveSiteContentFromEditor()" style="width:100%;justify-content:center;padding:12px;font-size:0.95rem">
+            💾 Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
   </div><!-- /admin-body -->
 </div><!-- /admin-page -->
 
@@ -841,7 +869,8 @@
 <script src="js/app.js?v=9"></script>
 <script src="js/photos.js?v=1"></script>
 <script src="js/smartfill.js?v=2"></script>
-<script src="js/admin.js?v=8"></script>
+<script src="js/admin.js?v=9"></script>
+<script src="js/content.js?v=1"></script>
 
 <script>
   // Sidebar search filter

@@ -526,10 +526,13 @@ document.addEventListener('DOMContentLoaded', () => {
 window.debouncePlaceSearch = debouncePlaceSearch;
 window.clearPlaceResults   = clearPlaceResults;
 window.switchAdminTab = function(tab) {
-  document.querySelectorAll('.admin-tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='add')||(i===1&&tab==='list')));
+  document.querySelectorAll('.admin-tab-btn').forEach((b,i) =>
+    b.classList.toggle('active', (i===0&&tab==='add')||(i===1&&tab==='list')||(i===2&&tab==='content')));
   document.getElementById('admin-tab-add').classList.toggle('active', tab==='add');
   document.getElementById('admin-tab-list').classList.toggle('active', tab==='list');
+  document.getElementById('admin-tab-content')?.classList.toggle('active', tab==='content');
   if (tab==='add') { document.getElementById('place-search-input')?.focus(); }
+  if (tab==='content' && window.buildContentEditor) { buildContentEditor(); }
 };
 window.openAdminLogin    = openAdminLogin;
 window.closeAdminLogin   = closeAdminLogin;
