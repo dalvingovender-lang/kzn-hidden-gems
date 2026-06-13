@@ -110,13 +110,21 @@ function saveSiteContentFromEditor() {
   });
   saveSiteContent(overrides);
   applySiteContent();
-  showContentStatus(`✅ Saved! ${Object.keys(overrides).length} custom field(s) applied. Changes are live.`, 'success');
+  // Push to shared cloud so all visitors see the new wording (no-op if not configured)
+  const synced = window.Cloud?.enabled;
+  window.Cloud?.pushSiteContent?.(overrides);
+  showContentStatus(
+    `✅ Saved! ${Object.keys(overrides).length} custom field(s) applied. ` +
+    (synced ? 'Published to all visitors. 🌍' : 'Live in this browser.'),
+    'success'
+  );
 }
 
 // ── Reset everything back to defaults ────────────────────────────────────────
 function resetSiteContent() {
   if (!confirm('Reset ALL site text back to the original defaults? Your custom wording will be lost.')) return;
   localStorage.removeItem(CONTENT_KEY);
+  window.Cloud?.pushSiteContent?.({});   // clear shared overrides too
   // Restore defaults on the live DOM
   document.querySelectorAll('[data-edit]').forEach(el => {
     const key = el.getAttribute('data-edit');

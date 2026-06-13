@@ -702,6 +702,9 @@ function submitReview() {
   });
   loc.reviewCount = loc.reviews.length;
 
+  // Persist (localStorage) + push to shared cloud so the review survives & is shared
+  window.Storage?.saveLocation?.(loc);
+
   closeModals();
 
   if (currentLocation && currentLocation.id === locId) {
@@ -725,6 +728,9 @@ function submitAlert() {
 
   loc.alerts.unshift({ category, severity, details, active: true });
   loc.activeAlerts = loc.alerts.filter(a => a.active).length;
+
+  // Persist + push to shared cloud
+  window.Storage?.saveLocation?.(loc);
 
   closeModals();
 

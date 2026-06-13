@@ -82,6 +82,9 @@ function saveLocation(locData) {
   if (liveIdx >= 0) KZN_DATA.locations[liveIdx] = locData;
   else              KZN_DATA.locations.push(locData);
 
+  // Push to the shared cloud (no-op if cloud not configured)
+  window.Cloud?.pushLocations?.();
+
   return locData;
 }
 
@@ -91,6 +94,9 @@ function deleteLocation(locId) {
   saveCustomLocations(custom);
   const idx = KZN_DATA.locations.findIndex(l => l.id === locId);
   if (idx >= 0) KZN_DATA.locations.splice(idx, 1);
+
+  // Push to the shared cloud (no-op if cloud not configured)
+  window.Cloud?.pushLocations?.();
 }
 
 // expose
